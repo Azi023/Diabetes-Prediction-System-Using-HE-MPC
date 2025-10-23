@@ -1,0 +1,92 @@
+###############
+# Python
+###############
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+env/
+venv/
+ENV/
+develop-eggs/
+downloads/
+eggs/
+.eggs/
+parts/
+sdist/
+var/
+wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+*.pyc
+
+###############
+# Environments / Secrets
+###############
+.env
+.env.local
+.env.*.local
+*.pem
+*.key
+private_key.txt
+public_key.txt
+
+###############
+# Databases
+###############
+*.db
+*.sqlite
+*.sqlite3
+logs.db
+
+###############
+# Node / JS
+###############
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+lerna-debug.log*
+dist/
+dist-ssr/
+*.local
+
+###############
+# Build / Artifacts
+###############
+build/
+lib/
+lib64/
+wheels/
+*.model
+*.pkl
+*.joblib
+*.h5
+
+###############
+# Editor / IDE
+###############
+.vscode/*
+!.vscode/extensions.json
+.idea/
+*.sw?
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+
+###############
+# OS / System
+###############
+.DS_Store
+Thumbs.db
+*~
+
+###############
+# Logs
+###############
+logs/
+*.log

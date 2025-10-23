@@ -1,0 +1,110 @@
+{
+  "feature_columns": [
+    "gender",
+    "age",
+    "hypertension",
+    "heart_disease",
+    "bmi",
+    "HbA1c_level",
+    "blood_glucose_level"
+  ],
+  "encoders": {
+    "gender": [
+      "0",
+      "1",
+      "Other"
+    ]
+  },
+  "algorithm": "XGBoost",
+  "metrics": {
+    "LogisticRegression": {
+      "cv_f1": 0.726536842545651,
+      "test_metrics": {
+        "accuracy": 0.96025,
+        "precision": 0.8594122319301033,
+        "recall": 0.6364705882352941,
+        "f1": 0.7313281514025008,
+        "roc_auc": 0.961610012857602
+      },
+      "best_params": {
+        "clf__C": 10.0,
+        "clf__penalty": "l2"
+      }
+    },
+    "RandomForest": {
+      "cv_f1": 0.8021807855360235,
+      "test_metrics": {
+        "accuracy": 0.9722,
+        "precision": 0.9965277777777778,
+        "recall": 0.6752941176470588,
+        "f1": 0.8050490883590463,
+        "roc_auc": 0.9748053359048537
+      },
+      "best_params": {
+        "clf__max_depth": 10,
+        "clf__min_samples_split": 5,
+        "clf__n_estimators": 100
+      }
+    },
+    "DecisionTree": {
+      "cv_f1": 0.8023082632970606,
+      "test_metrics": {
+        "accuracy": 0.97155,
+        "precision": 0.967741935483871,
+        "recall": 0.6882352941176471,
+        "f1": 0.8044001375042971,
+        "roc_auc": 0.9735148666023787
+      },
+      "best_params": {
+        "clf__max_depth": 10,
+        "clf__min_samples_split": 2
+      }
+    },
+    "XGBoost": {
+      "cv_f1": 0.8055971533173217,
+      "test_metrics": {
+        "accuracy": 0.97245,
+        "precision": 0.9799498746867168,
+        "recall": 0.69,
+        "f1": 0.8098032447359337,
+        "roc_auc": 0.9794069109611058
+      },
+      "best_params": {
+        "clf__learning_rate": 0.1,
+        "clf__max_depth": 6,
+        "clf__n_estimators": 100
+      }
+    }
+  },
+  "threshold_used": 0.65,
+  "feature_stats": {
+    "gender": {
+      "mean": 0.415075,
+      "std": 0.49314069430031837
+    },
+    "age": {
+      "mean": 41.9006005,
+      "std": 22.529762166507656
+    },
+    "hypertension": {
+      "mean": 0.0748375,
+      "std": 0.2631289581056217
+    },
+    "heart_disease": {
+      "mean": 0.0395,
+      "std": 0.19478128760227462
+    },
+    "bmi": {
+      "mean": 27.316864125,
+      "std": 6.6409355206957095
+    },
+    "HbA1c_level": {
+      "mean": 5.52753375,
+      "std": 1.0707044492346791
+    },
+    "blood_glucose_level": {
+      "mean": 138.0790125,
+      "std": 40.662177075567946
+    }
+  }
+}
