@@ -8,6 +8,8 @@ import hashlib
 from datetime import datetime, timedelta
 from functools import wraps
 
+from psi import run_psi                            
+from secure_inference import perform_secure_inference_sync
 from flask import Flask, request, jsonify, current_app
 from flask_cors import CORS
 import numpy as np
@@ -584,6 +586,202 @@ def get_patient_stats(current_user=None):
     except Exception as e:
         current_app.logger.exception(f"Failed to get stats: {e}")
         return jsonify({"ok": False, "error": "Failed to retrieve statistics"}), 500
+
+# ===============================
+# MPC/PSI Endpoints
+# ===============================
+
+@app.route("/api/mpc/hospital-data", methods=["GET"])
+def get_hospital_data(current_user=None):
+    """Get sample NICs from both hospitals for PSI"""
+    try:
+        if not db_connection:
+            return jsonify({"ok": False, "error": "Database not available"}), 500
+        
+        hospital_param = request.args.get('hospital', 'both')
+        limit = int(request.args.get('limit', 50))
+        
+        result = {}
+        
+        if hospital_param in ['A', 'both']:
+            col_a = db_connection.get_collection("hospital_a_patients")
+            nics_a = [doc['NIC'] for doc in col_a.find({}, {'NIC': 1, '_id': 0}).limit(limit)]
+            result['hospital_a'] = {
+                'count': len(nics_a),
+                'sample_nics': nics_a[:10],  # Show first 10 for preview
+                'all_nics': nics_a
+            }
+        
+        if hospital_param in ['B', 'both']:
+            col_b = db_connection.get_collection("hospital_b_patients")
+            nics_b = [doc['NIC'] for doc in col_b.find({}, {'NIC': 1, '_id': 0}).limit(limit)]
+            result['hospital_b'] = {
+                'count': len(nics_b),
+                'sample_nics': nics_b[:10],  # Show first 10 for preview
+                'all_nics': nics_b
+            }
+        
+        return jsonify({"ok": True, "data": result}), 200
+        
+    except Exception as e:
+        current_app.logger.exception(f"Failed to get hospital data: {e}")
+        return jsonify({"ok": False, "error": str(e)}), 500
+
+
+@app.route("/api/mpc/psi", methods=["POST"])
+def perform_psi(current_user=None):
+    """Perform Private Set Intersection between two hospitals"""
+    try:
+        data = request.get_json(silent=True)
+        if not data:
+            return jsonify({"ok": False, "error": "Invalid JSON body"}), 400
+        
+        nics_a = data.get("nics_a", [])
+        nics_b = data.get("nics_b", [])
+        
+        if not nics_a or not nics_b:
+            return jsonify({"ok": False, "error": "Both nics_a and nics_b are required"}), 400
+        
+        # Run PSI protocol
+        common_nics = run_psi(nics_a, nics_b, already_hashed=False)
+        
+        return jsonify({
+            "ok": True,
+            "common_count": len(common_nics),
+            "common_nics": common_nics,
+            "message": f"Found {len(common_nics)} common patients via PSI"
+        }), 200
+        
+    except Exception as e:
+        current_app.logger.exception(f"PSI failed: {e}")
+        return jsonify({"ok": False, "error": str(e)}), 500
+
+
+@app.route("/api/mpc/predict/<nic>", methods=["GET"])
+def mpc_predict(nic, current_user=None):
+    """Perform secure MPC prediction for a specific patient"""
+    try:
+        if not db_connection:
+            return jsonify({"ok": False, "error": "Database not available"}), 500
+        
+        # Try to find patient in hospital A first
+        col_a = db_connection.get_collection("hospital_a_patients")
+        patient = col_a.find_one({"NIC": str(nic)})
+        
+        # If not found, try hospital B
+        if not patient:
+            col_b = db_connection.get_collection("hospital_b_patients")
+            patient = col_b.find_one({"NIC": str(nic)})
+        
+        if not patient:
+            return jsonify({"ok": False, "error": f"Patient {nic} not found"}), 404
+        
+        # Extract features
+        feature_columns = ['gender', 'age', 'hypertension', 'heart_disease', 
+                          'bmi', 'HbA1c_level', 'blood_glucose_level']
+        
+        patient_features = [float(patient.get(col, 0)) for col in feature_columns]
+        
+        # Load scaler from secure_inference module
+        from secure_inference import scaler
+        import numpy as np
+        
+        # Scale features
+        patient_features_scaled = scaler.transform([patient_features])[0].tolist()
+        
+        # Perform secure MPC inference
+        secure_score = perform_secure_inference_sync(patient_features_scaled)
+        
+        # Calculate prediction
+        prob = 1.0 / (1.0 + np.exp(-secure_score))
+        prediction = "Diabetic" if prob > 0.5 else "Non-diabetic"
+        
+        return jsonify({
+            "ok": True,
+            "nic": nic,
+            "secure_score": float(secure_score),
+            "probability": float(prob),
+            "prediction": prediction,
+            "features": {col: patient.get(col) for col in feature_columns}
+        }), 200
+        
+    except Exception as e:
+        current_app.logger.exception(f"MPC prediction failed: {e}")
+        return jsonify({"ok": False, "error": str(e)}), 500
+
+
+@app.route("/api/mpc/batch-predict", methods=["POST"])
+def mpc_batch_predict(current_user=None):
+    """Perform MPC predictions on multiple patients"""
+    try:
+        data = request.get_json(silent=True)
+        if not data:
+            return jsonify({"ok": False, "error": "Invalid JSON body"}), 400
+        
+        nics = data.get("nics", [])
+        if not nics:
+            return jsonify({"ok": False, "error": "NICs list is required"}), 400
+        
+        results = []
+        from secure_inference import scaler
+        import numpy as np
+        
+        feature_columns = ['gender', 'age', 'hypertension', 'heart_disease', 
+                          'bmi', 'HbA1c_level', 'blood_glucose_level']
+        
+        col_a = db_connection.get_collection("hospital_a_patients")
+        col_b = db_connection.get_collection("hospital_b_patients")
+        
+        for nic in nics:
+            try:
+                # Find patient
+                patient = col_a.find_one({"NIC": str(nic)})
+                if not patient:
+                    patient = col_b.find_one({"NIC": str(nic)})
+                
+                if not patient:
+                    results.append({
+                        "nic": nic,
+                        "success": False,
+                        "error": "Patient not found"
+                    })
+                    continue
+                
+                # Extract and scale features
+                patient_features = [float(patient.get(col, 0)) for col in feature_columns]
+                patient_features_scaled = scaler.transform([patient_features])[0].tolist()
+                
+                # Perform MPC inference
+                secure_score = perform_secure_inference_sync(patient_features_scaled)
+                prob = 1.0 / (1.0 + np.exp(-secure_score))
+                prediction = "Diabetic" if prob > 0.5 else "Non-diabetic"
+                
+                results.append({
+                    "nic": nic,
+                    "success": True,
+                    "secure_score": float(secure_score),
+                    "probability": float(prob),
+                    "prediction": prediction
+                })
+                
+            except Exception as e:
+                results.append({
+                    "nic": nic,
+                    "success": False,
+                    "error": str(e)
+                })
+        
+        return jsonify({
+            "ok": True,
+            "total": len(nics),
+            "successful": len([r for r in results if r.get("success")]),
+            "results": results
+        }), 200
+        
+    except Exception as e:
+        current_app.logger.exception(f"Batch prediction failed: {e}")
+        return jsonify({"ok": False, "error": str(e)}), 500
+
 
 
 @app.route("/health", methods=["GET"])

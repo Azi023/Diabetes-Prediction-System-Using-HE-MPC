@@ -64,10 +64,11 @@ import { AuthProvider, useAuth } from './contexts/AuthContext';
 import { ProtectedRoute } from './utils/ProtectedRoute';
 import { motion } from 'framer-motion';
 import { LogOut, User as UserIcon } from 'lucide-react';
+import { MPCDashboard } from './components/MPCDashboard';
 
 const AppContent: React.FC = () => {
   const { isAuthenticated, user, logout } = useAuth();
-  const [activeTab, setActiveTab] = useState<'predict' | 'dashboard'>('predict');
+  const [activeTab, setActiveTab] = useState<'predict' | 'dashboard'| 'mpc'>('predict');
 
   // If not authenticated, show login page
   if (!isAuthenticated) {
@@ -85,7 +86,7 @@ const AppContent: React.FC = () => {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
           <motion.div
             initial={{ opacity: 0, y: -20 }}
-            animate={{ opacity: 1, y: 0 }}
+            animate={{ opacity: 1, y: 0 }}  
             className="flex items-center justify-between bg-black/20 backdrop-blur-xl border border-white/10 rounded-xl px-6 py-3"
           >
             <div className="flex items-center space-x-3">
@@ -126,6 +127,13 @@ const AppContent: React.FC = () => {
           {activeTab === 'dashboard' && (
             <ProtectedRoute allowedRoles={['admin']}>
               <Dashboard />
+            </ProtectedRoute>
+          )}
+
+           {/* MPC Collaboration - Only for admins */}
+          {activeTab === 'mpc' && (
+            <ProtectedRoute allowedRoles={['admin']}>
+              <MPCDashboard />
             </ProtectedRoute>
           )}
         </main>

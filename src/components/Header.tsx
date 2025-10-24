@@ -114,6 +114,7 @@ export const Header: React.FC<HeaderProps> = ({ activeTab, onTabChange }) => {
   // Only show dashboard for admins
   if (user?.role === 'admin') {
     tabs.push({ id: 'dashboard', label: 'Security Center', icon: BarChart3, roles: ['admin'] });
+    tabs.push({ id: 'mpc', label: 'MPC Collaboration', icon: Activity, roles: ['admin'] });
   }
 
   return (
