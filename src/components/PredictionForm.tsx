@@ -110,25 +110,15 @@ export const PredictionForm: React.FC = () => {
         });
         setError(response.message || "Failed to save record");
       } else {
-        // Successful save
-        let successText = "Your record is successful.";
-        if (response.prediction !== undefined && response.prediction !== null) {
-          const predText =
-            typeof response.prediction === "number"
-              ? response.prediction === 1
-                ? "Diabetic"
-                : "Non-diabetic"
-              : String(response.prediction);
-          successText += ` Prediction: ${predText}`;
-        }
-        toast.success("Record saved", {
+        // Successful save - simple success message only
+        toast.success("Record saved successfully", {
           style: {
             background: "#1F2937",
             color: "#10B981",
             border: "1px solid #10B981",
           },
         });
-        setResult({ ...response, message: successText });
+        setResult({ ...response, message: "Record saved successfully" });
         // reset some fields (but keep NIC and Name to help multiple entries if desired)
         setFormData((prev) => ({
           ...prev,
@@ -275,32 +265,24 @@ export const PredictionForm: React.FC = () => {
               </div>
             </div>
           ) : (
-            <div className={`relative overflow-hidden backdrop-blur-xl border rounded-2xl p-8 shadow-2xl ${
-              result.prediction === 1 || result.prediction === "Diabetic"
-                ? "bg-gradient-to-r from-orange-500/20 to-red-500/20 border-orange-500/30"
-                : "bg-gradient-to-r from-green-500/20 to-emerald-500/20 border-green-500/30"
-            }`}>
-              <div className={`absolute inset-0 animate-pulse ${
-                result.prediction === 1 || result.prediction === "Diabetic"
-                  ? "bg-gradient-to-r from-orange-500/10 to-red-500/10"
-                  : "bg-gradient-to-r from-green-500/10 to-emerald-500/10"
-              }`} />
+            <div className="relative overflow-hidden backdrop-blur-xl border rounded-2xl p-8 shadow-2xl bg-gradient-to-r from-green-500/20 to-emerald-500/20 border-green-500/30">
+              <div className="absolute inset-0 animate-pulse bg-gradient-to-r from-green-500/10 to-emerald-500/10" />
               <div className="relative flex items-center space-x-4">
                 <motion.div
                   initial={{ scale: 0 }}
                   animate={{ scale: 1 }}
                   transition={{ delay: 0.25, type: "spring", stiffness: 200 }}
-                  className={`p-4 rounded-2xl ${ result.prediction === 1 || result.prediction === "Diabetic" ? "bg-orange-500/20" : "bg-green-500/20" }`}
+                  className="p-4 rounded-2xl bg-green-500/20"
                 >
-                  <Brain className={`h-8 w-8 ${ result.prediction === 1 || result.prediction === "Diabetic" ? "text-orange-400" : "text-green-400" }`} />
+                  <Brain className="h-8 w-8 text-green-400" />
                 </motion.div>
                 <div>
-                  <h3 className={`text-2xl font-bold mb-2 ${ result.prediction === 1 || result.prediction === "Diabetic" ? "text-orange-300" : "text-green-300" }`}>Submission Complete</h3>
-                  <p className={`text-xl font-semibold ${ result.prediction === 1 || result.prediction === "Diabetic" ? "text-orange-200" : "text-green-200" }`}>
-                    {result.message ?? (result.prediction === 1 ? "Diabetic" : "Non-diabetic")}
+                  <h3 className="text-2xl font-bold mb-2 text-green-300">Submission Complete</h3>
+                  <p className="text-xl font-semibold text-green-200">
+                    {result.message || "Record saved successfully"}
                   </p>
-                  <p className={`text-sm mt-2 ${ result.prediction === 1 || result.prediction === "Diabetic" ? "text-orange-300" : "text-green-300" }`}>
-                    {result.prediction === 1 ? 'Please consult healthcare personnel for next steps.' : 'No immediate diabetes risk detected.'}
+                  <p className="text-sm mt-2 text-green-300">
+                    Patient information has been securely stored.
                   </p>
                 </div>
               </div>

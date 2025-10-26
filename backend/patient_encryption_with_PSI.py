@@ -31,10 +31,10 @@ def load_context():
 # ===============================
 # Main Patient Record Updater
 # ===============================
-def update_patient_record(record: dict):
-    """Encrypt patient data and insert/update record in MongoDB."""
+def update_patient_record(record: dict, collection_name: str = "patients"):
+    """Encrypt patient data and insert/update record in the given MongoDB collection."""
     context = load_context()
-    patients_collection = db_connection.get_collection("patients")
+    patients_collection = db_connection.get_collection(collection_name)
 
     nic_plain = str(record["NIC"])
     nic_hashed = hash_text(nic_plain)

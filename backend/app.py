@@ -417,8 +417,23 @@ def create_patient(current_user=None):
             "diabetes": pred
         }
 
+       # Decide which hospital collection to write to (no silent default)
+        hospital = (request.args.get("hospital")
+                    or request.headers.get("X-Hospital")
+                    or (getattr(current_user, "hospital", None) if current_user else None)
+                    or "").strip().upper()
+
+        if hospital not in ("A", "B"):
+            return jsonify({
+                "ok": False,
+                "error": 'Invalid or missing hospital. Use ?hospital=A|B or header X-Hospital: A|B'
+            }), 400
+
+        collection_name = "hospital_a_patients" if hospital == "A" else "hospital_b_patients"
+
+
         try:
-            update_patient_record(record)
+            update_patient_record(record, collection_name=collection_name)
             print("✅ Record inserted successfully into the database.")
             
             # Log successful record creation
@@ -603,7 +618,7 @@ def get_hospital_data(current_user=None):
             return jsonify({"ok": False, "error": "Database not available"}), 500
         
         hospital_param = request.args.get('hospital', 'both')
-        limit = int(request.args.get('limit', 50))
+        limit = int(request.args.get('limit', 0))
         
         result = {}
         
@@ -647,54 +662,62 @@ def get_hospital_data(current_user=None):
 @app.route("/api/mpc/psi", methods=["POST"])
 def run_psi_protocol():
     """
-    Run Private Set Intersection (PSI) protocol on two sets of NICs.
-    Expects: { "nics_a": [...], "nics_b": [...] }
-    Returns: List of common NIC hashes
+    Run Private Set Intersection (PSI) on hashed NICs.
+    Accepts optional body: { "nics_a": [...], "nics_b": [...] }.
+    If body is missing, it auto-loads hashed NICs from hospital A/B collections.
     """
     try:
-        data = request.get_json()
-        if not data or 'nics_a' not in data or 'nics_b' not in data:
-            return jsonify({"ok": False, "error": "Missing nics_a or nics_b"}), 400
-        
-        nics_a = data['nics_a']
-        nics_b = data['nics_b']
-        
-        # Hash all NICs
-        hashed_a = set(hash_text(str(nic)) for nic in nics_a)
-        hashed_b = set(hash_text(str(nic)) for nic in nics_b)
-        
-        # Find intersection
-        common_hashes = list(hashed_a.intersection(hashed_b))
-        
-        # Log the PSI operation
+        data = request.get_json(silent=True) or {}
+
+        # If client didn't send lists, auto-load from DB
+        if 'nics_a' not in data or 'nics_b' not in data:
+            from db_connection import db_connection
+            a = db_connection.get_collection("hospital_a_patients")
+            b = db_connection.get_collection("hospital_b_patients")
+            nics_a = [d["NIC_Hashed"] for d in a.find({}, {"NIC_Hashed": 1})]
+            nics_b = [d["NIC_Hashed"] for d in b.find({}, {"NIC_Hashed": 1})]
+        else:
+            nics_a = data['nics_a']
+            nics_b = data['nics_b']
+
+        # DO NOT hash again – they are already hashed at source
+        set_a = set(map(str, nics_a))
+        set_b = set(map(str, nics_b))
+        common_hashes = sorted(list(set_a.intersection(set_b)))
+
+
+        # (Optional) also call your helper for consistency
+        common_nics = common_hashes
+
+        # Log PSI event
+        intersection = len(common_hashes)
+        denom = max(len(nics_a), len(nics_b)) or 1
         log_security_event(
             input_data={"nics_a_count": len(nics_a), "nics_b_count": len(nics_b)},
             mse_score=0.0,
             is_attack=False,
             event_type="psi_protocol",
             additional_info={
-                "common_count": len(common_hashes),
-                "intersection_rate": len(common_hashes) / max(len(nics_a), len(nics_b)) * 100
-            }
+                "common_count": intersection,
+                "intersection_rate": intersection / denom
+            },
         )
 
-        # Use the run_psi function from your psi module
-        common_nics = run_psi(nics_a, nics_b)
-
+        # Single source of truth for count
         return jsonify({
             "ok": True,
-            "common_hashes": common_hashes,
-            "common_count": len(common_hashes),
             "total_a": len(nics_a),
             "total_b": len(nics_b),
-            "common_nics": common_nics,  # Frontend expects this field
+            "common_hashes": common_hashes,
+            "common_nics": common_nics,      # frontend reads this field
             "common_count": len(common_nics),
             "message": f"PSI complete. Found {len(common_nics)} common patients between hospitals."
         }), 200
-        
+
     except Exception as e:
         current_app.logger.exception(f"PSI protocol error: {e}")
         return jsonify({"ok": False, "error": str(e)}), 500
+
 
 
 @app.route("/api/mpc/predict", methods=["POST"])

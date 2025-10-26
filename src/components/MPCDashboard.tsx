@@ -44,11 +44,11 @@ export const MPCDashboard: React.FC = () => {
     return { hashed_nics, sample_hashes, count };
   };
 
-  // Step 1: Load hospital data (limit = 50)
+  // Step 1: Load hospital data 
 const fetchHospitalData = async () => {
   setLoadingHospitals(true);
   try {
-    const response = await fetch('/api/mpc/hospital-data?hospital=both&limit=50', {
+    const response = await fetch('/api/mpc/hospital-data?hospital=both', {
       method: 'GET',
     });
 

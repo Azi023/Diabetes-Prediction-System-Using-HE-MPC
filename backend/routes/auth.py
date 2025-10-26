@@ -55,10 +55,10 @@ def register():
             }), 400
         
         # Validate role
-        if role not in ['admin', 'patient']:
+        if role not in ['admin', 'patient', 'hospital']:
             return jsonify({
                 'success': False,
-                'message': 'Invalid role. Must be "admin" or "patient"'
+                'message': 'Invalid role. Must be "admin" or "patient", or "hospital"'
             }), 400
         
         # Check if user exists
