@@ -1,0 +1,51 @@
+NIC,Name,Address,gender,age,hypertension,heart_disease,bmi,HbA1c_level,blood_glucose_level,diabetes,Outcome
+199012345V,John Smith,"123 Main Street, Colombo",1,69,1,1,19.64,4.8,128,1,0
+199123456V,Sarah Johnson,"456 Park Road, Kandy",1,35,0,1,33.99,8.0,109,1,1
+199234567V,Michael Brown,"789 Lake View, Galle",0,61,1,0,33.9,6.9,207,0,1
+199345678V,Emily Davis,"321 Hill Street, Negombo",1,35,0,0,20.92,5.1,139,0,0
+199456789V,James Wilson,"654 Beach Road, Matara",0,69,1,0,34.51,7.2,248,0,1
+199567890V,Maria Garcia,"987 Garden Lane, Jaffna",0,40,0,1,30.67,8.3,121,1,0
+199678901V,Robert Taylor,"147 Temple Road, Anuradhapura",1,24,0,0,24.87,5.5,115,1,1
+199789012V,Lisa Anderson,"258 River View, Ratnapura",1,49,1,0,20.8,6.5,206,0,1
+199890123V,David Martinez,"369 Mountain Road, Badulla",0,78,0,1,21.49,6.8,249,0,0
+199901234V,Jennifer Lee,"741 Forest Lane, Kurunegala",1,46,1,0,28.34,8.5,219,0,0
+200200001V,Rachel Star,"312 Street, Kandy",0,55,1,1,21.0,6.2,243,0,0
+200200002V,Patricia Cloud,"332 Street, Kandy",0,43,0,1,19.24,4.7,113,0,1
+200200003V,Mark River,"37 Street, Kandy",0,41,0,1,28.83,6.4,117,1,1
+200200004V,Tina Star,"288 Road, Kandy",1,50,0,0,29.25,7.5,132,0,0
+200200005V,Laura Wood,"988 Lane, Kandy",0,58,0,1,30.44,6.2,281,1,0
+200200006V,Patricia River,"615 Lane, Kandy",0,51,1,1,23.38,6.0,111,0,1
+200200007V,Steven Rain,"953 Road, Kandy",1,31,1,1,21.78,7.5,196,0,1
+200200008V,Mark River,"275 Road, Kandy",0,56,1,1,19.6,8.6,193,1,0
+200200009V,Tina Sun,"912 Avenue, Kandy",0,73,0,1,33.2,8.0,291,0,1
+200200010V,Steven River,"753 Lane, Kandy",1,76,1,0,23.93,6.9,289,1,0
+200200011V,Patricia Moon,"536 Avenue, Kandy",1,80,0,1,34.91,8.8,270,0,1
+200200012V,Kevin Rain,"407 Road, Kandy",0,78,1,1,25.17,5.7,150,1,1
+200200013V,Oscar Snow,"661 Street, Kandy",0,51,1,0,27.4,5.1,207,0,0
+200200014V,Quinn River,"196 Road, Kandy",0,29,0,0,30.59,7.1,243,1,1
+200200015V,Kevin Moon,"14 Road, Kandy",1,42,1,1,33.64,4.2,165,1,1
+200200016V,Laura Sky,"296 Street, Kandy",1,52,1,0,32.13,8.5,116,1,1
+200200017V,Oscar River,"273 Road, Kandy",0,30,0,0,23.23,8.5,94,0,1
+200200018V,Steven Sun,"453 Street, Kandy",0,60,1,1,28.81,7.1,103,0,1
+200200019V,Patricia Snow,"594 Lane, Kandy",0,50,1,1,22.37,6.5,217,1,1
+200200020V,Rachel Moon,"150 Road, Kandy",1,76,0,1,25.19,4.5,210,0,1
+200200021V,Kevin Sun,"200 Road, Kandy",0,78,0,1,27.93,6.6,203,0,1
+200200022V,Tina Snow,"177 Avenue, Kandy",0,67,0,1,27.4,6.6,174,1,0
+200200023V,Laura River,"517 Lane, Kandy",1,61,0,0,22.63,4.9,163,1,0
+200200024V,Kevin Moon,"271 Road, Kandy",0,59,1,1,23.0,4.9,171,0,1
+200200025V,Quinn Star,"839 Avenue, Kandy",1,29,1,0,30.27,6.0,119,1,0
+200200026V,Steven Rain,"744 Road, Kandy",0,48,1,0,31.56,4.7,265,1,1
+200200027V,Kevin Star,"366 Street, Kandy",0,66,1,1,26.05,4.7,124,0,1
+200200028V,Laura Moon,"85 Street, Kandy",1,30,0,1,20.31,4.9,93,0,1
+200200029V,Oscar Sun,"348 Lane, Kandy",1,44,0,0,32.23,8.2,135,1,0
+200200030V,Steven Moon,"169 Avenue, Kandy",0,39,1,1,19.13,6.8,97,0,0
+200200031V,Nancy Rain,"797 Avenue, Kandy",0,48,0,1,25.2,4.2,202,0,1
+200200032V,Rachel Moon,"860 Street, Kandy",0,42,1,0,22.81,7.2,260,0,1
+200200033V,Tina Cloud,"236 Avenue, Kandy",0,74,0,0,23.84,5.6,86,0,0
+200200034V,Oscar Sun,"970 Street, Kandy",0,70,1,1,28.04,7.5,129,0,0
+200200035V,Patricia Rain,"115 Street, Kandy",0,72,0,0,31.25,8.0,237,1,0
+200200036V,Nancy Sky,"324 Avenue, Kandy",0,76,1,0,25.13,8.9,142,1,0
+200200037V,Laura Moon,"367 Lane, Kandy",0,64,1,0,25.93,6.8,296,1,0
+200200038V,Rachel Snow,"114 Street, Kandy",0,49,1,1,33.6,4.6,107,1,0
+200200039V,Steven Sun,"116 Road, Kandy",1,55,1,0,34.89,4.2,288,1,0
+200200040V,Oscar Snow,"84 Street, Kandy",0,78,1,0,25.32,7.3,252,0,1

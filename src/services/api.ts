@@ -26,6 +26,23 @@ class ApiService {
   async getLogs() {
     return this.request('/api/logs');
   }
+
+  async getHospitalPatients(hospitalId: 'A' | 'B') {
+  return this.request(`/api/mpc/hospital/${hospitalId}/patients`);
+}
+
+async runPSI(nicsA: string[], nicsB: string[]) {
+  return this.request('/api/mpc/psi', {
+    method: 'POST',
+    body: JSON.stringify({ nics_a: nicsA, nics_b: nicsB })
+  });
+}
+
+async runMPCPrediction(nic: string) {
+  return this.request(`/api/mpc/predict/${nic}`, {
+    method: 'POST'
+  });
+}
 }
 
 export default new ApiService();

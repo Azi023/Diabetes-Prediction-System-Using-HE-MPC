@@ -68,7 +68,7 @@ import { MPCDashboard } from './components/MPCDashboard';
 
 const AppContent: React.FC = () => {
   const { isAuthenticated, user, logout } = useAuth();
-  const [activeTab, setActiveTab] = useState<'predict' | 'dashboard'| 'mpc'>('predict');
+  const [activeTab, setActiveTab] = useState<'predict' | 'dashboard' | 'mpc'>('predict');
 
   // If not authenticated, show login page
   if (!isAuthenticated) {

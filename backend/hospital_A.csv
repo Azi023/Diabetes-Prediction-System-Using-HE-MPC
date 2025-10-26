@@ -1,0 +1,51 @@
+NIC,Name,Address,gender,age,hypertension,heart_disease,bmi,HbA1c_level,blood_glucose_level,diabetes,Outcome
+199012345V,John Smith,"123 Main Street, Colombo",0,24,1,0,21.19,7.8,234,1,0
+199123456V,Sarah Johnson,"456 Park Road, Kandy",0,27,1,1,29.69,4.9,236,1,1
+199234567V,Michael Brown,"789 Lake View, Galle",1,24,0,0,25.74,8.3,191,1,0
+199345678V,Emily Davis,"321 Hill Street, Negombo",1,27,0,0,34.77,8.3,205,1,0
+199456789V,James Wilson,"654 Beach Road, Matara",1,67,0,0,33.97,7.0,216,1,1
+199567890V,Maria Garcia,"987 Garden Lane, Jaffna",1,37,0,0,25.09,7.2,228,1,0
+199678901V,Robert Taylor,"147 Temple Road, Anuradhapura",0,61,0,1,19.11,5.3,145,0,1
+199789012V,Lisa Anderson,"258 River View, Ratnapura",1,25,1,1,21.35,5.5,143,0,1
+199890123V,David Martinez,"369 Mountain Road, Badulla",1,51,1,0,18.83,8.8,202,1,1
+199901234V,Jennifer Lee,"741 Forest Lane, Kurunegala",0,76,1,1,32.84,6.8,199,0,1
+200100001V,Helen Blue,"166 Lane, Colombo",1,41,1,0,29.04,7.8,262,0,0
+200100002V,Helen White,"951 Lane, Colombo",1,37,0,0,33.03,6.3,262,0,1
+200100003V,Fiona Orange,"560 Avenue, Colombo",1,49,1,1,24.36,7.4,190,1,1
+200100004V,Carol Purple,"590 Road, Colombo",0,70,0,0,33.51,5.9,290,0,0
+200100005V,Julia Green,"965 Road, Colombo",0,78,1,1,22.43,8.3,299,1,1
+200100006V,Brian Pink,"795 Avenue, Colombo",0,70,0,1,21.67,8.6,158,1,1
+200100007V,Edward Green,"415 Street, Colombo",1,28,0,1,31.28,4.0,252,1,0
+200100008V,Brian Brown,"264 Lane, Colombo",1,63,1,1,33.43,8.4,125,0,1
+200100009V,Edward Orange,"519 Lane, Colombo",1,36,0,0,25.58,4.7,291,0,1
+200100010V,Carol Purple,"659 Lane, Colombo",1,70,0,0,30.84,5.6,140,1,0
+200100011V,Alex White,"206 Avenue, Colombo",1,41,0,0,27.78,5.6,283,0,0
+200100012V,Brian Green,"851 Street, Colombo",0,48,1,1,30.89,8.9,243,0,1
+200100013V,Carol Orange,"881 Road, Colombo",1,37,1,0,28.15,4.8,121,1,0
+200100014V,Edward Blue,"599 Avenue, Colombo",1,30,0,1,27.59,8.8,227,1,0
+200100015V,Ivan Orange,"717 Avenue, Colombo",1,23,0,1,20.46,5.9,103,1,0
+200100016V,Carol White,"971 Avenue, Colombo",1,27,0,1,20.52,7.8,90,1,0
+200100017V,Ivan Orange,"103 Lane, Colombo",1,44,0,1,27.77,5.2,254,0,0
+200100018V,Edward Black,"246 Lane, Colombo",0,20,0,0,27.56,6.9,83,0,0
+200100019V,Alex Blue,"54 Avenue, Colombo",1,78,0,1,28.72,5.3,239,0,1
+200100020V,Helen Green,"923 Street, Colombo",0,37,1,0,21.0,6.6,276,0,0
+200100021V,Ivan White,"359 Lane, Colombo",1,55,1,0,19.36,6.3,298,1,1
+200100022V,Fiona Gray,"73 Street, Colombo",0,52,0,0,33.07,8.8,291,1,0
+200100023V,Julia Green,"943 Lane, Colombo",1,51,0,0,22.5,5.5,142,0,1
+200100024V,Carol Green,"216 Avenue, Colombo",1,27,0,0,24.62,5.2,138,1,1
+200100025V,Ivan Black,"92 Avenue, Colombo",0,55,1,1,18.52,8.8,146,0,0
+200100026V,Edward Green,"455 Avenue, Colombo",0,70,1,0,26.82,6.8,143,0,0
+200100027V,Diana Purple,"814 Avenue, Colombo",0,75,0,0,21.25,8.8,214,0,0
+200100028V,Helen White,"300 Lane, Colombo",1,38,0,1,34.62,7.4,160,0,0
+200100029V,Fiona Green,"443 Street, Colombo",1,71,1,0,20.43,6.0,94,0,0
+200100030V,Edward Blue,"80 Street, Colombo",1,69,0,1,20.56,5.8,158,1,1
+200100031V,Helen White,"979 Road, Colombo",1,31,1,0,19.21,5.1,143,0,0
+200100032V,Helen Pink,"521 Street, Colombo",0,55,1,0,33.1,7.6,214,1,0
+200100033V,Diana Yellow,"159 Avenue, Colombo",1,40,1,1,28.45,5.2,217,1,1
+200100034V,Helen Pink,"297 Street, Colombo",1,46,1,1,19.4,7.5,205,0,1
+200100035V,Diana Green,"903 Road, Colombo",0,25,0,0,23.34,8.3,191,0,1
+200100036V,Alex Gray,"215 Lane, Colombo",1,80,0,1,31.95,4.5,103,1,0
+200100037V,Helen Black,"78 Lane, Colombo",0,70,0,1,34.17,5.4,194,0,0
+200100038V,Julia Black,"622 Road, Colombo",1,67,0,1,19.76,8.6,131,0,0
+200100039V,Ivan Purple,"496 Street, Colombo",1,65,1,0,23.79,6.5,135,1,0
+200100040V,George White,"948 Road, Colombo",1,38,0,1,24.28,6.5,162,0,1

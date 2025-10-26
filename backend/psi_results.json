@@ -1,0 +1,21 @@
+{
+  "timestamp": "2025-10-26T15:48:17.156413",
+  "hospital_a_count": 50,
+  "hospital_b_count": 50,
+  "common_patients_count": 10,
+  "common_hashed_nics": [
+    "235fc6a8cb5a4fc4cc74bf3b9c8d803ed441aebf999e38ce4057f3dbab8262c5",
+    "e0f8d44a35bf6e3808677b84f050e544c59c2a8453ed5b4f988dd8449a65d89f",
+    "be86313b6270318bfa906e8b3b96be2921a2f91621accf4cf27297ab15af8b5e",
+    "d19fd76a35bb08b27ea851e516153a098f78d33182cbee66641163ba314c5e98",
+    "8d11bea9e7a28377e40247acbc1343280334654505f56fe4ec8d991798b31d8e",
+    "b416c94ba50fe9e1e0071d9070cf52141196c3c72666518d75b40ccc036bca74",
+    "9c8513b324846bc589ba743818c8c7d15c0e4be1eb00faaec4db213105215c06",
+    "96d7756d7e08d4d75d347394929925ca7355f8f53f4d8e8aef188f38bfece0e7",
+    "dafc2a5fd0eb31d478ae7bdcf0f8a51964afb4241c3d5f02e381ea53422222f2",
+    "582897c4f43232e177c432476167d63eeee8d445e4d09eac46000b966ce0bbc9"
+  ],
+  "encryption_status": "SUCCESS",
+  "psi_protocol": "HASH-BASED",
+  "privacy_preserved": true
+}

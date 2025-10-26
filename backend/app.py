@@ -8,11 +8,14 @@ import hashlib
 from datetime import datetime, timedelta
 from functools import wraps
 
-from psi import run_psi                            
+from patient_encryption_with_PSI import hash_text
+from psi import hash_id, PSI_SALT, run_psi                            
 from secure_inference import perform_secure_inference_sync
 from flask import Flask, request, jsonify, current_app
 from flask_cors import CORS
 import numpy as np
+import pandas as pd
+
 
 # ===============================
 # External modules
@@ -587,13 +590,14 @@ def get_patient_stats(current_user=None):
         current_app.logger.exception(f"Failed to get stats: {e}")
         return jsonify({"ok": False, "error": "Failed to retrieve statistics"}), 500
 
-# ===============================
-# MPC/PSI Endpoints
-# ===============================
+
+@app.route("/health", methods=["GET"])
+def health():
+    return jsonify({"ok": True, "message": "Server running fine"}), 200
 
 @app.route("/api/mpc/hospital-data", methods=["GET"])
 def get_hospital_data(current_user=None):
-    """Get sample NICs from both hospitals for PSI"""
+    """Get HASHED NICs from both hospitals for PSI"""
     try:
         if not db_connection:
             return jsonify({"ok": False, "error": "Database not available"}), 500
@@ -605,23 +609,35 @@ def get_hospital_data(current_user=None):
         
         if hospital_param in ['A', 'both']:
             col_a = db_connection.get_collection("hospital_a_patients")
-            nics_a = [doc['NIC'] for doc in col_a.find({}, {'NIC': 1, '_id': 0}).limit(limit)]
+            
+            # Get only NIC_Hashed fields
+            docs_a = list(col_a.find({}, {'NIC_Hashed': 1, '_id': 0}).limit(limit))
+            hashed_nics_a = [doc['NIC_Hashed'] for doc in docs_a if 'NIC_Hashed' in doc]
+            
             result['hospital_a'] = {
-                'count': len(nics_a),
-                'sample_nics': nics_a[:10],  # Show first 10 for preview
-                'all_nics': nics_a
+                'hashed_nics': hashed_nics_a,  # Frontend expects this
+                'count': len(hashed_nics_a),
+                'sample_hashes': [h[:16] + "..." for h in hashed_nics_a[:5]]  # Truncated for display
             }
         
         if hospital_param in ['B', 'both']:
             col_b = db_connection.get_collection("hospital_b_patients")
-            nics_b = [doc['NIC'] for doc in col_b.find({}, {'NIC': 1, '_id': 0}).limit(limit)]
+            
+            # Get only NIC_Hashed fields
+            docs_b = list(col_b.find({}, {'NIC_Hashed': 1, '_id': 0}).limit(limit))
+            hashed_nics_b = [doc['NIC_Hashed'] for doc in docs_b if 'NIC_Hashed' in doc]
+            
             result['hospital_b'] = {
-                'count': len(nics_b),
-                'sample_nics': nics_b[:10],  # Show first 10 for preview
-                'all_nics': nics_b
+                'hashed_nics': hashed_nics_b,  # Frontend expects this
+                'count': len(hashed_nics_b),
+                'sample_hashes': [h[:16] + "..." for h in hashed_nics_b[:5]]  # Truncated for display
             }
         
-        return jsonify({"ok": True, "data": result}), 200
+        return jsonify({
+            "ok": True,
+            "hospital_a": result.get('hospital_a'),
+            "hospital_b": result.get('hospital_b')
+        }), 200
         
     except Exception as e:
         current_app.logger.exception(f"Failed to get hospital data: {e}")
@@ -629,165 +645,156 @@ def get_hospital_data(current_user=None):
 
 
 @app.route("/api/mpc/psi", methods=["POST"])
-def perform_psi(current_user=None):
-    """Perform Private Set Intersection between two hospitals"""
+def run_psi_protocol():
+    """
+    Run Private Set Intersection (PSI) protocol on two sets of NICs.
+    Expects: { "nics_a": [...], "nics_b": [...] }
+    Returns: List of common NIC hashes
+    """
     try:
-        data = request.get_json(silent=True)
-        if not data:
-            return jsonify({"ok": False, "error": "Invalid JSON body"}), 400
+        data = request.get_json()
+        if not data or 'nics_a' not in data or 'nics_b' not in data:
+            return jsonify({"ok": False, "error": "Missing nics_a or nics_b"}), 400
         
-        nics_a = data.get("nics_a", [])
-        nics_b = data.get("nics_b", [])
+        nics_a = data['nics_a']
+        nics_b = data['nics_b']
         
-        if not nics_a or not nics_b:
-            return jsonify({"ok": False, "error": "Both nics_a and nics_b are required"}), 400
+        # Hash all NICs
+        hashed_a = set(hash_text(str(nic)) for nic in nics_a)
+        hashed_b = set(hash_text(str(nic)) for nic in nics_b)
         
-        # Run PSI protocol
-        common_nics = run_psi(nics_a, nics_b, already_hashed=False)
+        # Find intersection
+        common_hashes = list(hashed_a.intersection(hashed_b))
         
+        # Log the PSI operation
+        log_security_event(
+            input_data={"nics_a_count": len(nics_a), "nics_b_count": len(nics_b)},
+            mse_score=0.0,
+            is_attack=False,
+            event_type="psi_protocol",
+            additional_info={
+                "common_count": len(common_hashes),
+                "intersection_rate": len(common_hashes) / max(len(nics_a), len(nics_b)) * 100
+            }
+        )
+
+        # Use the run_psi function from your psi module
+        common_nics = run_psi(nics_a, nics_b)
+
         return jsonify({
             "ok": True,
+            "common_hashes": common_hashes,
+            "common_count": len(common_hashes),
+            "total_a": len(nics_a),
+            "total_b": len(nics_b),
+            "common_nics": common_nics,  # Frontend expects this field
             "common_count": len(common_nics),
-            "common_nics": common_nics,
-            "message": f"Found {len(common_nics)} common patients via PSI"
+            "message": f"PSI complete. Found {len(common_nics)} common patients between hospitals."
         }), 200
         
     except Exception as e:
-        current_app.logger.exception(f"PSI failed: {e}")
+        current_app.logger.exception(f"PSI protocol error: {e}")
         return jsonify({"ok": False, "error": str(e)}), 500
 
 
-@app.route("/api/mpc/predict/<nic>", methods=["GET"])
-def mpc_predict(nic, current_user=None):
-    """Perform secure MPC prediction for a specific patient"""
+@app.route("/api/mpc/predict", methods=["POST"])
+def mpc_prediction():
+    """
+    Perform secure MPC prediction on a patient from the common set.
+    Expects: { "nic_hash": "..." }
+    Returns: Prediction result using secure computation
+    """
     try:
+        data = request.get_json()
+        nic = data.get('nic_hash')
+        if not data or 'nic_hash' not in data:
+            return jsonify({"ok": False, "error": "Missing nic_hash"}), 400
+        
+        nic_hash = data['nic_hash']
+        
         if not db_connection:
             return jsonify({"ok": False, "error": "Database not available"}), 500
         
-        # Try to find patient in hospital A first
-        col_a = db_connection.get_collection("hospital_a_patients")
-        patient = col_a.find_one({"NIC": str(nic)})
-        
-        # If not found, try hospital B
-        if not patient:
-            col_b = db_connection.get_collection("hospital_b_patients")
-            patient = col_b.find_one({"NIC": str(nic)})
-        
-        if not patient:
-            return jsonify({"ok": False, "error": f"Patient {nic} not found"}), 404
-        
-        # Extract features
-        feature_columns = ['gender', 'age', 'hypertension', 'heart_disease', 
-                          'bmi', 'HbA1c_level', 'blood_glucose_level']
-        
-        patient_features = [float(patient.get(col, 0)) for col in feature_columns]
-        
-        # Load scaler from secure_inference module
-        from secure_inference import scaler
-        import numpy as np
-        
-        # Scale features
-        patient_features_scaled = scaler.transform([patient_features])[0].tolist()
-        
-        # Perform secure MPC inference
-        secure_score = perform_secure_inference_sync(patient_features_scaled)
-        
-        # Calculate prediction
-        prob = 1.0 / (1.0 + np.exp(-secure_score))
-        prediction = "Diabetic" if prob > 0.5 else "Non-diabetic"
-        
-        return jsonify({
-            "ok": True,
-            "nic": nic,
-            "secure_score": float(secure_score),
-            "probability": float(prob),
-            "prediction": prediction,
-            "features": {col: patient.get(col) for col in feature_columns}
-        }), 200
-        
-    except Exception as e:
-        current_app.logger.exception(f"MPC prediction failed: {e}")
-        return jsonify({"ok": False, "error": str(e)}), 500
+        # Hash the NIC to search in database
+        nic_hashed = hash_text(str(nic))
 
-
-@app.route("/api/mpc/batch-predict", methods=["POST"])
-def mpc_batch_predict(current_user=None):
-    """Perform MPC predictions on multiple patients"""
-    try:
-        data = request.get_json(silent=True)
-        if not data:
-            return jsonify({"ok": False, "error": "Invalid JSON body"}), 400
-        
-        nics = data.get("nics", [])
-        if not nics:
-            return jsonify({"ok": False, "error": "NICs list is required"}), 400
-        
-        results = []
-        from secure_inference import scaler
-        import numpy as np
-        
-        feature_columns = ['gender', 'age', 'hypertension', 'heart_disease', 
-                          'bmi', 'HbA1c_level', 'blood_glucose_level']
-        
+    
+        # Try to find the patient in both hospitals
         col_a = db_connection.get_collection("hospital_a_patients")
         col_b = db_connection.get_collection("hospital_b_patients")
         
-        for nic in nics:
-            try:
-                # Find patient
-                patient = col_a.find_one({"NIC": str(nic)})
-                if not patient:
-                    patient = col_b.find_one({"NIC": str(nic)})
-                
-                if not patient:
-                    results.append({
-                        "nic": nic,
-                        "success": False,
-                        "error": "Patient not found"
-                    })
-                    continue
-                
-                # Extract and scale features
-                patient_features = [float(patient.get(col, 0)) for col in feature_columns]
-                patient_features_scaled = scaler.transform([patient_features])[0].tolist()
-                
-                # Perform MPC inference
-                secure_score = perform_secure_inference_sync(patient_features_scaled)
-                prob = 1.0 / (1.0 + np.exp(-secure_score))
-                prediction = "Diabetic" if prob > 0.5 else "Non-diabetic"
-                
-                results.append({
-                    "nic": nic,
-                    "success": True,
-                    "secure_score": float(secure_score),
-                    "probability": float(prob),
-                    "prediction": prediction
-                })
-                
-            except Exception as e:
-                results.append({
-                    "nic": nic,
-                    "success": False,
-                    "error": str(e)
-                })
+        patient = col_a.find_one({"NIC_Hashed": nic_hash})
+        if not patient:
+            patient = col_b.find_one({"NIC_Hashed": nic_hash})
         
+        if not patient:
+            return jsonify({"ok": False, "error": "Patient not found"}), 404
+        
+        # Extract features for prediction
+        features = [
+            float(patient.get('gender', 0)),
+            float(patient.get('age', 0)),
+            float(patient.get('hypertension', 0)),
+            float(patient.get('heart_disease', 0)),
+            float(patient.get('bmi', 0)),
+            float(patient.get('HbA1c_level', 0)),
+            float(patient.get('blood_glucose_level', 0))
+        ]
+        
+        # Build input vector
+        x = np.array(features, dtype=float).reshape(1, -1)
+        
+        # Scale and predict
+        xs = scaler.transform(x) if scaler is not None else x
+        if hasattr(model, "predict_proba"):
+            prob = float(model.predict_proba(xs)[:, 1][0])
+            pred = int(prob >= 0.5)
+        else:
+            pred = int(model.predict(xs)[0])
+            prob = 0.5
+        
+        # Calculate secure score (logit/log-odds before sigmoid)
+        # This is the raw output before the sigmoid function
+        if prob > 0 and prob < 1:
+            secure_score = float(np.log(prob / (1 - prob)))
+        else:
+            # Handle edge cases
+            secure_score = 0.0
+        
+        # Log the MPC prediction
+        log_security_event(
+            input_data={"nic_hash": nic_hash[:16] + "..."},
+            mse_score=0.0,
+            is_attack=False,
+            event_type="mpc_prediction",
+            additional_info={
+                "prediction": "diabetic" if pred == 1 else "non_diabetic",
+                "probability": prob,
+                "secure_score": secure_score
+            }
+        )
+        
+        # CRITICAL: Match the frontend's expected response structure
         return jsonify({
             "ok": True,
-            "total": len(nics),
-            "successful": len([r for r in results if r.get("success")]),
-            "results": results
+            "nic": nic_hash,  # Changed from 'nic_hash' to 'nic' to match frontend
+            "secure_score": secure_score,  # Added secure_score field
+            "prediction": "Diabetic" if pred == 1 else "Non-Diabetic",
+            "probability": prob,
+            "features": {  # Changed from 'features_used' to 'features' to match frontend
+                "gender": "Male" if int(features[0]) == 1 else "Female",
+                "age": int(features[1]),
+                "hypertension": "Yes" if int(features[2]) == 1 else "No",
+                "heart_disease": "Yes" if int(features[3]) == 1 else "No",
+                "bmi": round(features[4], 2),
+                "HbA1c_level": round(features[5], 2),
+                "blood_glucose_level": round(features[6], 2)
+            }
         }), 200
         
     except Exception as e:
-        current_app.logger.exception(f"Batch prediction failed: {e}")
+        current_app.logger.exception(f"MPC prediction error: {e}")
         return jsonify({"ok": False, "error": str(e)}), 500
-
-
-
-@app.route("/health", methods=["GET"])
-def health():
-    return jsonify({"ok": True, "message": "Server running fine"}), 200
-
 
 if __name__ == "__main__":
     port = int(os.getenv("PORT", 5001))
@@ -797,4 +804,4 @@ if __name__ == "__main__":
     print(f"🔑 TenSEAL public key: {'FOUND' if os.path.exists(PUBLIC_KEY_PATH) else 'MISSING'}")
     print(f"🌐 Running on port {port}")
     print("=" * 70)
-    app.run(host="0.0.0.0", port=port, debug=True)
+    app.run(host="0.0.0.0", port=5001, debug=True, use_reloader=False, threaded=True)
